@@ -1,1 +1,67 @@
+# Cluster Cassandra 3 nœuds - Projet IoT
+# Mémoire limitée : MAX_HEAP_SIZE=512M, HEAP_NEWSIZE=128M par nœud
+x-cassandra: &cassandra
+  image: cassandra:4.1
+  restart: unless-stopped
+  networks: [iot-net]
+  mem_limit: 1536m
+  healthcheck:
+    test: ["CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES' > /dev/null 2>&1"]
+    interval: 30s
+    timeout: 15s
+    retries: 20
+    start_period: 60s
+
+x-env: &env
+  CASSANDRA_CLUSTER_NAME: IoTCluster
+  CASSANDRA_DC: dc1
+  CASSANDRA_RACK: rack1
+  CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+  CASSANDRA_SEEDS: cassandra1
+  MAX_HEAP_SIZE: 512M
+  HEAP_NEWSIZE: 128M
+
+services:
+  cassandra1:
+    <<: *cassandra
+    container_name: cassandra1
+    hostname: cassandra1
+    ports: ["9042:9042"]
+    environment: *env
+    volumes: [cass1-data:/var/lib/cassandra]
+
+  cassandra2:
+    <<: *cassandra
+    container_name: cassandra2
+    hostname: cassandra2
+    environment: *env
+    volumes: [cass2-data:/var/lib/cassandra]
+    depends_on:
+      cassandra1: { condition: service_healthy }
+
+  cassandra3:
+    <<: *cassandra
+    container_name: cassandra3
+    hostname: cassandra3
+    environment: *env
+    volumes: [cass3-data:/var/lib/cassandra]
+    depends_on:
+      cassandra2: { condition: service_healthy }
+
+  web:
+    build: ./web
+    container_name: iot-web
+    restart: unless-stopped
+    networks: [iot-net]
+    ports: ["3000:3000"]
+    depends_on:
+      cassandra3: { condition: service_healthy }
+
+networks:
+  iot-net:
+
+volumes:
+  cass1-data:
+  cass2-data:
+  cass3-data:
 
