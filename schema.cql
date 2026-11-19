@@ -3,7 +3,7 @@ CREATE KEYSPACE IF NOT EXISTS iot
 
 USE iot;
 
--- Clé de partition : capteur  | Clustering : date (plus récent d'abord)
+-- Clé de partition : capteur  | Clustering : date ( plus récent d'abord )
 CREATE TABLE IF NOT EXISTS mesures (
   capteur text,
   date    timestamp,
