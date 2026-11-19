@@ -1,1 +1,11 @@
+{
+  "name": "iot-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "main": "server.js",
+  "dependencies": {
+    "cassandra-driver": "^4.7.2",
+    "express": "^4.19.2"
+  }
+}
 
